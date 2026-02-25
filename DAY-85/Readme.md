@@ -1,139 +1,122 @@
-# LeetCode 1356 — Sort Integers by The Number of 1 Bits
+# 🔢 Sort Array by Number of 1 Bits (LeetCode 1356)
 
-## 📝 Problem Statement
+## 🧩 Problem Statement
 
-Given an integer array `arr`, sort the integers in ascending order based on the number of `1`s in their binary representation.
+Given an integer array `arr`, sort the integers in ascending order by:
 
-If two or more integers have the same number of `1`s, then sort them in ascending numerical order.
-
-Return the array after sorting it.
-
----
-
-## 📌 Example 1
-
-**Input:**
-
-```
-arr = [0,1,2,3,4,5,6,7,8]
-```
-
-**Output:**
-
-```
-[0,1,2,4,8,3,5,6,7]
-```
-
-**Explanation:**
-
-| Number | Binary | Count of 1s |
-| ------ | ------ | ----------- |
-| 0      | 0      | 0           |
-| 1      | 1      | 1           |
-| 2      | 10     | 1           |
-| 4      | 100    | 1           |
-| 8      | 1000   | 1           |
-| 3      | 11     | 2           |
-| 5      | 101    | 2           |
-| 6      | 110    | 2           |
-| 7      | 111    | 3           |
-
-Sorted first by bit count, then by numeric value.
+1. The number of **1’s in their binary representation**
+2. If two numbers have the same number of 1’s, then sort them numerically in ascending order.
 
 ---
 
-## 📌 Example 2
+## 📌 Example
 
-**Input:**
-
-```
-arr = [1024,512,256,128,64,32,16,8,4,2,1]
-```
-
-**Output:**
+Input:
 
 ```
-[1,2,4,8,16,32,64,128,256,512,1024]
+arr = [1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1]
 ```
 
-All numbers contain exactly one `1` in their binary representation, so they are sorted normally in ascending order.
+Output:
+
+```
+[1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024]
+```
 
 ---
 
-# 💡 Key Insight
+# 💡 Intuition
 
-This is a **custom sorting problem**.
+Instead of manually converting each number to binary and counting 1’s:
 
-We are not sorting based on the binary number itself.
-We are sorting based on a **property** of the number — the count of `1` bits.
+* Java already provides a built-in method:
 
-Sorting Rule:
+```
+Integer.bitCount(n)
+```
 
-1. Primary condition → Number of 1 bits (ascending)
-2. Secondary condition → Numeric value (ascending)
+This returns the number of set bits (1’s) in the binary form of `n`.
+
+So we use a **custom comparator** inside `Arrays.sort()`.
 
 ---
 
-# 🪜 Approach
+# ⚙️ Approach
 
-### Step 1: Convert `int[]` to `Integer[]`
+### Step 1:
 
-`Arrays.sort()` with a custom comparator works only with object arrays, not primitive arrays.
+Convert primitive `int[]` to `Integer[]`
+(Because custom comparator works only with objects)
 
-### Step 2: Use `Integer.bitCount()`
+### Step 2:
 
-This method returns the number of `1`s in the binary representation of a number.
+Use `Arrays.sort()` with comparator:
 
-Example:
+* First compare based on `Integer.bitCount(a)`
+* If equal → compare normally (`a - b`)
 
-```
-Integer.bitCount(5) → 2
-(5 = 101 in binary)
-```
+### Step 3:
 
-### Step 3: Define Custom Comparator
-
-* If bit counts are different → sort by bit count
-* If bit counts are equal → sort numerically
-
-### Step 4: Convert back to `int[]`
+Copy sorted result back to original array.
 
 ---
 
-# 💻 Java Implementation
+# 🧠 Comparator Logic Explained
+
+```java
+Arrays.sort(temp, (a, b) -> {
+    int countA = Integer.bitCount(a);
+    int countB = Integer.bitCount(b);
+
+    // First condition: sort by number of 1 bits
+    if (countA != countB) {
+        return countA - countB;
+    }
+
+    // Second condition: if equal, sort numerically
+    return a - b;
+});
+```
+
+### What happens here?
+
+* `Integer.bitCount(a)` → counts number of 1’s in binary of `a`
+* If counts are different → smaller count comes first
+* If counts are same → smaller number comes first
+
+---
+
+# 🖥️ Full Java Code
 
 ```java
 import java.util.*;
 
 class Solution {
     public int[] sortByBits(int[] arr) {
-        
-        // Convert primitive array to Integer array
+
+        // Convert int[] to Integer[]
         Integer[] temp = new Integer[arr.length];
-        
         for (int i = 0; i < arr.length; i++) {
             temp[i] = arr[i];
         }
-        
-        // Custom sorting
+
+        // Sort using custom comparator
         Arrays.sort(temp, (a, b) -> {
             int countA = Integer.bitCount(a);
             int countB = Integer.bitCount(b);
-            
-            // First condition: sort by number of 1 bits
+
             if (countA != countB) {
                 return countA - countB;
             }
-            
-            // Second condition: if equal, sort numerically
+
             return a - b;
         });
-        
-        // Convert back to primitive array
+
+        // Copy back to original array
         for (int i = 0; i < arr.length; i++) {
             arr[i] = temp[i];
         }
-        
+
         return arr;
     }
 }
@@ -141,105 +124,98 @@ class Solution {
 
 ---
 
-# 🔎 Dry Run (Step-by-Step Flow)
+# 🔍 Dry Run
 
-### Input:
+Let’s take:
 
 ```
-[3, 4, 2]
+arr = [5, 3, 7]
 ```
 
-Binary + Bit Count:
+### Step 1: Binary + Count
 
-| Number | Binary | 1s |
-| ------ | ------ | -- |
-| 3      | 11     | 2  |
-| 4      | 100    | 1  |
-| 2      | 10     | 1  |
+| Number | Binary | 1's Count |
+| ------ | ------ | --------- |
+| 5      | 101    | 2         |
+| 3      | 011    | 2         |
+| 7      | 111    | 3         |
 
 ---
 
-### Comparator Calls (Simulated)
+### Step 2: Sorting Logic
 
-### Compare (3, 4)
+Comparator calls (internally by Java):
 
-```
-countA = 2
-countB = 1
-2 - 1 = 1 (positive)
-```
+1. Compare 5 and 3
 
-→ 4 comes before 3
-Array becomes: `[4, 3, 2]`
+   * Both have 2 ones
+   * Compare numerically → 3 comes first
 
----
+2. Compare 7 and 5
 
-### Compare (3, 2)
-
-```
-countA = 2
-countB = 1
-2 - 1 = 1 (positive)
-```
-
-→ 2 comes before 3
-Array becomes: `[4, 2, 3]`
+   * 7 has 3 ones
+   * 5 has 2 ones
+   * 5 comes first
 
 ---
 
-### Compare (4, 2)
+### Final Sorted Output:
 
 ```
-countA = 1
-countB = 1
-Equal bit count → compare numerically
-4 - 2 = 2 (positive)
+[3, 5, 7]
 ```
 
-→ 2 comes before 4
-Final Array: `[2, 4, 3]`
+---
+
+# 🧠 Key Learning
+
+✅ Learned how to use custom comparator
+✅ Understood how Java internally calls comparator multiple times
+✅ Learned about `Integer.bitCount()`
+✅ Realized sorting logic can be simplified using built-in methods
+✅ Understood importance of tie-breaking condition
 
 ---
 
-# 📊 Time and Space Complexity
+# ⚡ Time & Space Complexity
 
-**Time Complexity:**
-`O(n log n)` — due to sorting
+### Time Complexity:
 
-**Space Complexity:**
-`O(n)` — for using Integer array
+```
+O(n log n)
+```
 
----
+(Because of sorting)
 
-# 🎯 Mistakes I Initially Made
+### Space Complexity:
 
-* Tried converting numbers into binary strings unnecessarily
-* Treated it like a max-finding problem
-* Overcomplicated the sorting logic
-* Forgot that this is a rule-based ordering problem
+```
+O(n)
+```
 
----
-
-# 📚 What I Learned
-
-* Custom sorting requires defining a comparison rule
-* Comparator return values control ordering:
-
-  * Negative → first comes before second
-  * Positive → second comes before first
-  * Zero → equal
-* `Integer.bitCount()` simplifies bit counting
-* Avoid overengineering simple problems
+(Used temporary Integer array)
 
 ---
 
-# 🚀 Final Reflection
+# 🚀 Overall Flow Summary
 
-This problem strengthened my understanding of:
+1. Convert array → Integer[]
+2. Sort using bitCount comparator
+3. Handle tie case using numeric compare
+4. Copy back to original array
+5. Return result
 
-* Custom comparators
-* Bit manipulation fundamentals
-* Sorting by multiple conditions
-* Clean problem analysis before coding
+---
 
-Small problem. Big conceptual clarity.
+# 📚 Final Thought
+
+Initially tried manually comparing bit counts with loops.
+Then realized Java already provides optimized built-in support.
+
+This problem improved:
+
+* Comparator understanding
+* Sorting intuition
+* Binary manipulation knowledge
+* Debugging mindset
+
